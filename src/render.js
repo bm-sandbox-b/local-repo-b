@@ -32,12 +32,12 @@ function renderNote (note) {
     : ''
 
   return [
-    `<li class="note" data-id="${note.id}">`,
+    `<li class="note" data-id="${escapeHtml(note.id)}">`,
     '  <div class="note-text">',
     `    <h3 class="title">${escapeHtml(note.title)}</h3>`,
     body ? `    ${body}` : '',
     '  </div>',
-    `  <button class="delete" data-id="${note.id}" aria-label="Delete ${escapeHtml(note.title)}">×</button>`,
+    `  <button class="delete" data-id="${escapeHtml(note.id)}" aria-label="Delete ${escapeHtml(note.title)}">×</button>`,
     '</li>'
   ].filter(Boolean).join('\n')
 }

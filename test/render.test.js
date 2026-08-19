@@ -33,6 +33,12 @@ test('a note carries its id where the click handler can find it', () => {
   assert.ok(html.includes('data-id="7"'))
 })
 
+test('an id that is markup does not become markup either', () => {
+  const html = renderNote({ id: '1"><img src=x onerror=alert(1)>', title: 't', body: '' })
+  assert.ok(!html.includes('<img'), 'the tag must not break out of the attribute')
+  assert.ok(html.includes('&quot;&gt;&lt;img'))
+})
+
 test('an empty body leaves out the paragraph rather than adding a blank one', () => {
   assert.ok(!renderNote({ id: 1, title: 't', body: '' }).includes('class="body"'))
   assert.ok(!renderNote({ id: 1, title: 't', body: '   ' }).includes('class="body"'))
