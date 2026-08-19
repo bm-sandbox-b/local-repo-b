@@ -5,6 +5,18 @@ const assert = require('node:assert')
 
 const { escapeHtml, renderNote, renderNotes, renderCount, renderStatus } = require('../src/render')
 
+// What the browser's parser does to an attribute value before the page ever
+// sees it. The id test below cares that an id survives the trip out to markup
+// and back, not which of the several correct spellings the escaper chose.
+function decodeEntities (s) {
+  return s
+    .replace(/&#(\d+);/g, (_, d) => String.fromCharCode(Number(d)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCharCode(parseInt(h, 16)))
+    .replace(/&quot;/g, '"').replace(/&apos;/g, "'")
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
+}
+
 test('the five characters that matter are escaped', () => {
   assert.strictEqual(escapeHtml('<&>"\''), '&lt;&amp;&gt;&quot;&#39;')
 })
@@ -36,7 +48,10 @@ test('a note carries its id where the click handler can find it', () => {
 test('an id that is markup does not become markup either', () => {
   const html = renderNote({ id: '1"><img src=x onerror=alert(1)>', title: 't', body: '' })
   assert.ok(!html.includes('<img'), 'the tag must not break out of the attribute')
-  assert.ok(html.includes('&quot;&gt;&lt;img'))
+  const attr = html.match(/data-id="([^"]*)"/)
+  assert.ok(attr, 'the id is in a data-id attribute')
+  assert.strictEqual(decodeEntities(attr[1]), '1"><img src=x onerror=alert(1)>',
+    'the id survives the round trip to Number(button.dataset.id)')
 })
 
 test('an empty body leaves out the paragraph rather than adding a blank one', () => {
